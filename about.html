@@ -1,0 +1,47 @@
+<html>
+<head>
+    <title>Image search abstraction</title>
+    <style>
+        body {
+          background-color: #ffffcc;
+          font-family: sans-serif;
+          margin: 40px;
+          color: #660000;
+        }
+        h1 {
+          font-size: 3.5rem;
+          margin-left: 20px;
+        }
+        p {
+          display: inline-block;
+          font-size: 1.8rem;
+          margin-left: 20px;
+        }
+        .example {
+          font-size: 1.4rem;
+        }
+        .code {
+          background-color: #ffff99;
+          font-family: monospace;
+          font-size: 1.4rem;
+          color: #0000ff;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Search Abstraction Layer</h1>
+    <p>Search for images, paginate results, and view recent search queries.</p>
+    <div>
+      <p class="example">Search for images:</p>
+      <p class="code">https://imagesearch-djmot.herokuapp.com/imagesearch/&ltsearchtext&gt</p>
+    </div>
+    <div>
+      <p class="example">Add the paramater "offset=n" to paginate results:</p>
+      <p class="code">https://imagesearch-djmot.herokuapp.com/imagesearch/&ltsearchtext&gt?offset=3</p>
+    </div>
+    <div>
+      <p class="example">View recent search queries:</p>
+      <p class="code">https://imagesearch-djmot.herokuapp.com/imagesearch/</p>
+    </div>
+</body>
+</html>
