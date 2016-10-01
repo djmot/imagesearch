@@ -2,50 +2,62 @@ var express = require('express');
 var path = require('path');
 var url = require('url');
 var https = require('https');
-var mongo = require('mongodb').MongoClient;
+var fs = require('fs');
 var app = express();
 
-// For heroku deployment:
-//var appURL = 'https://imagesearch-djmot.herokuapp.com';
-
-// For cloud9 development:
-var appURL = 'https://project-djmot.c9users.io';
-
-
-var dbURL = 'mongodb://djmot:' + process.env.MDB_PASS + '@ds021326.mlab.com:21326/imagesearch_data';
 
 //----------------------------------------------------------------------------
 // Helper functions.
 //
 
-
-//-----------------------------------------------------------------------------
-// Connect to database and access collections.
-// 
-mongo.connect(dbURL, function(err, db) {
-if (err) {
-    return console.log("Error: database connect");
+// Replace contents of 'recent_searches.txt' with new search query info.
+function setText(newLine) {
+    fs.readFile('recent_searches.txt', 'utf8', function(err, data) {
+        if (err) {
+            return console.log("Err: readFile");
+        }
+        if (newLine.charAt(newLine.length - 1) !== '\n') {
+            newLine += '\n';
+        }
+        data += newLine;
+        var lines = data.split('\n');
+        var newText = "";
+        for (var i = 1; i < lines.length - 1; i++) {
+            newText += lines[i] + '\n';
+        }
+        fs.writeFile('recent_searches.txt', newText, function(err) {
+            if (err) {
+                console.log('Err: writeFile');
+            }
+        });
+    });
 }
-console.log("Connected to database");
-
-db.createCollection('queries', function(err, queries) {
-if (err) {
-    return console.log("Error: access 'queries' collection");
-}
-console.log("Accessed 'queries' collection");
 
 
 //-----------------------------------------------------------------------------
 // HTTP routing.
 //
+
+// Send recent queries.
 app.get('/imagesearch/', function(request, response) {
-    // TODO: show the 10 latest queries.
-    response.end("Show recent queries.");
+    // Send recent queries, stored in 'recent_searches.txt'.
+    fs.readFile('recent_searches.txt', 'utf8', function(err, data) {
+        if (err) {
+            return console.log('Err: readFile');
+        }
+        var lines = data.split('\n');
+        var result = "[";
+        for (var i = 0; i < lines.length - 1; i++) {
+            result += lines[i] + ',';
+        }
+        result = result.slice(0, -1);
+        result += ']';
+        response.end(result);
+    });
 });
 
-
+// Search using given string.
 app.get('/imagesearch/*', function(request, response) {
-    
     // Extract search string and page offset from URL.
     var parsedURL = url.parse(request.url, true);
     var searchString = parsedURL.pathname.slice(13); //remove '/imagesearch/'.
@@ -60,10 +72,11 @@ app.get('/imagesearch/*', function(request, response) {
         }
     }
     
-    
-    // Store new query document.
-    // TODO: store search query and time in mongo db.
-    
+    // Update file 'recent_searches.txt' with new query.
+    var date = new Date();
+    setText( JSON.stringify(
+        {term:searchString,time:date.toISOString()}
+    ));
     
     // Search images using Bing Search API.
     https.get({
@@ -99,13 +112,10 @@ app.get('/imagesearch/*', function(request, response) {
     
 });
 
+// For any other URL, send about page.
 app.get('*', function(request, response) {
     response.sendFile(path.join(__dirname, '/about.html'));
 });
-
-
-}); // end of createCollection() call.
-}); // end of connect() call.
 
 app.listen(process.env.PORT, process.env.IP);
 console.log("Listening on port " + process.env.PORT);
