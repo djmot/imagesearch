@@ -95,8 +95,9 @@ app.get('/imagesearch/*', function(request, response) {
         // Format results into array and send it.
         searchResponse.on('end', function() {
             var searchDataJSON = JSON.parse(searchData);
+            var numResults = searchDataJSON["value"].length;
             var searchReturn = [];
-            for (var i = 0; i < 10; i++) {
+            for (var i = 0; i < 10 && pageOffset + i < numResults; i++) {
                 searchReturn[i] = {
                     "url": searchDataJSON["value"][pageOffset + i]["contentUrl"],
                     "snippet": searchDataJSON["value"][pageOffset + i]["name"],
